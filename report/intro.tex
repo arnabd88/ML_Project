@@ -1,0 +1,16 @@
+%parent: main.tex
+\section{Introduction}
+\label{intro}
+The SVCOMP is a competition for software verification tools. There is an established set of verification tasks for comparing software verifiers, and the tools and benchmarks are publicized on the SV-COMP web site. SVCOMP benchmarks are partitioned into different \emph{categories} manually grouped by characteristic features such as usage of \emph{array}, \emph{bitvector}, \emph{concurrency}, and etc. Each category has a bunch of verification tasks which is a C source file \emph{f} and a verification property \emph{p}. The property is either \emph{reachability} or \emph{memory safety}. The designers of these benchmarks have labeled the true property type of each verification task. The competition assigns \emph{score} to each tool's result on a verification task $v$, and normalized sum of such scores of tasks in a category results in the \emph{category score}.
+
+\subsection{Learning Problem}
+We are aiming to build a machine learning portfolio solver which given a test verification task, it predicts the tool of choice for verification of this task. To do so, we basically implement the contribution in the paper \cite{DPVF:tool}, and build a linear classifier which trains on the SVCOMP 2014 results. Then, we will use SVCOMP 2015 results as the test data for our classifier. We have already collected and analyzed the required SVCOMP data, and read the reference paper \cite{DPVF:tool} in detail. Also, we have investigated how to implement the target classifier as we will discuss more in the following sections.
+
+\subsection{Program Metrics as Feature Vectors}
+We use two sets of program features introduced in \cite{DPVF:tool}: (1) variable role based metrics; (2) loop pattern based metrics. The following is describing each type of metrics in more detail.
+\paragraph{Role Based Metrics}
+Intuitively, a variable role is the pattern of how a variable is used in a program. For instance, an \emph{integer} variable could be used as a counter in a program, then it has the role COUNTER. Some other examples of roles such as BITVECTOR, LINEAR and etc. can be found in \cite{DPVF:tool, DVZ:var:role}. For a given verification task, the value of each variable feature as the ratio $\frac{|Res^R|}{|Vars|}$ is computed, where $Res^R$ is a mapping from variable roles to the program variable, and $Vars$ is the set of all variables in the given task.
+\paragraph{Loop Pattern Based Metrics}
+Loops are considered in four patterns as: \emph{syntactically bounded loops} $\mathcal{L}^{SB}$, \emph{syntactically terminating loops} $\mathcal{L}^{ST}$, \emph{simple loops} $\mathcal{L}^{simple}$ and \emph{hard loops} $\mathcal{L}^{hard}$. For a given verification task, the value of each loop feature as the ratio $\frac{|\mathcal{L}^P|}{|Loops|}$ is computed, where $P \in \{ST, SB, simple, hard\}$, and $Loops$ is the set of all loops in the given task.
+
+We extract the above mentioned metrics using the extraction tool from \cite{DPVF:tool} which uses \emph{data flow analysis}. We use the extracted metrics as feature vectors in a manner described below.

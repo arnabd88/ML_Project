@@ -1,0 +1,59 @@
+\documentclass[11pt, fullpage,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{url}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{float}
+\usepackage{pgfplots}
+\usepgfplotslibrary{polar}
+\usepgflibrary{shapes.geometric}
+\usetikzlibrary{calc}
+
+\pgfplotsset{my style/.append style={axis x line=middle, axis y line=
+middle, xlabel={$x$}, ylabel={$y$}, axis equal }}
+
+\newcommand{\semester}{Fall 2016}
+\newcommand{\assignmentId}{4}
+\newcommand{\releaseDate}{Oct 18, 2016}
+\newcommand{\dueDate}{Nov 1, 2016}
+
+\newcommand{\bx}{{\bf x}}
+\newcommand{\bw}{{\bf w}}
+\DeclareMathOperator{\sgn}{sgn}
+
+\title{Learning Best Verification Tool for SVCOMP Benchmarks}
+
+\date{CS 6350: Machine Learining \semester\\Intermediate Report}
+\author{Group: DABAGHCHIAN \& DAS}
+
+\begin{document}
+\pagenumbering{gobble}
+\maketitle
+
+\pagebreak
+\pagenumbering{arabic}
+
+\input{intro}
+
+\input{data}
+
+\input{classification}
+
+\input{eval}
+
+\input{conclusion}
+
+
+\begin{thebibliography}{9}
+\bibitem{DPVF:tool} 
+Y. Demyanova, T. Pani, H. Veith, and F. Zuleger.
+\textit{Empirical Software Metrics for Benchmarking of Verification Tools}. 
+In CAV 2015. LNCS. vol. 9206, pp. 561-579.
+
+\bibitem{DVZ:var:role}
+Y. Demyanova, H. Veith, and F. Zuleger.
+\textit{On the Concept of Variable Roles and its Use in Software Analysis}.
+In Formal Methods in Computer-Aided Design (FMCAD 2013), pp 226-230.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,20 @@
+%parent: main.tex
+\section{Data Organization}
+\label{data}
+The value of a feature vector depends strongly on the program, and weakly on the category. So, expanding each category to its constituent verification task. Then, we can use this entire set of verification tasks, combined from all the categories, to pursue a stronger classifier than the category based classifier. We use the \emph{category score} to label each verification task corresponding to that category in the training data. Assuming there are two categories of verification tasks, $c_1=\{v^1_1, v^1_2, ..., v^1_{m_1}\}$ and $c_2=\{v^2_1, v^2_2, ..., v^2_{m_2}\}$, where $v^i_j$ denotes the verification task $v_j$ in the category $c_i$. If the $i^{th}$ category has the score $s_i$. For example, if $f=(f_1, f_2, f_3, f_4, f_5)$ is the feature vector, then Table 1 would represent the training data set for all programs in those two categories. 
+\begin{table}
+\label{tbl:training_data}
+\centering
+\begin{tabular}{ccc|c|c|c|c||c}
+$v$ & & $f_1$ & $f_2$ &  $f_3$ & $f_4$ & $f_5$ & Lable \\
+\hline
+$v^1_1$ & & $0$ & $0.23$ &  $0.3$ & $0.5$ & $0.1$ & $s_1$ \\
+$\dots$ & & $\dots$ & $\dots$ &  $\dots$ & $\dots$ & $\dots$ & $s_1$ \\
+$v^1_{m_1}$ & & $0.2$ & $0$ &  $0.1$ & $0.03$ & $0.3$ & $s_1$ \\
+$v^2_{1}$ & & $0.1$ & $0.2$ &  $0.05$ & $0.25$ & $0$ & $s_2$ \\
+$\dots$ & & $\dots$ & $\dots$ &  $\dots$ & $\dots$ & $\dots$ & $s_2$ \\
+$v^2_{m_2}$ & & $0.02$ & $0.07$ &  $0.11$ & $0.3$ & $0.8$ & $s_2$ \\
+\end{tabular}
+\caption{The training data for two categories $c_1=\{v^1_1, v^1_2, ..., v^1_{m_1}\}$ and $c_2=\{v^2_1, v^2_2, ..., v^2_{m_2}\}$}
+\end{table}
+According to Table 1, the label of each verification task $v^i_j$ is the score of its corresponding category $c_i$. However SVCOMP results reflect that even though one tool was a winner in a category, there is a possibility that several other tools pose a close performance to the winner. Therefore, we introduce the probabilistic distribution of the scores of the tools on the labels. For example, for $v^1_1$, the label corresponding to a tool $t_k$ would be $\frac{s_k}{\sum \limits_{1 \leq p \leq N} s_p}$, where $s_k$ is the score of $t_k$ for $v^1_1$, and $N$ is the total number of tools. Thus, we get $N$ columns of labels corresponding to each tool. To simplify, we divide the entire training set into $N$ tables, where the label of $k^{th}$ table corresponds to the tool $t_k$ across all the verification tasks. Then, we continue to learn a linear classifier for each tool corresponding to each table. A linear classifier for each tool will be $\sum \limits_{f_i \in \mathcal{F}} val(f_i)w_i$, where $\mathcal{F}$ is the set of all features, $val(f_i)$ denotes the value of that feature, $1 \leq i \leq |\mathcal{F}|$, $w_i \in \mathbb{R}$ and $0 \leq val(f_i) \leq 1$.
