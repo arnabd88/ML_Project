@@ -13,6 +13,7 @@ import linearRegression
 genId   = -1
 trainId = -1
 learnId = -1
+testId  = -1
 
 Dpath     = ""
 BMList    = []
@@ -29,6 +30,8 @@ if("-gen" in sys.argv):
 
 if("-learn" in sys.argv):
         learnId = sys.argv.index("-learn")
+if("-test" in sys.argv):
+		testId = sys.argv.index("-test")
         
 if(trainId != -1):
 	Dpath     = os.getcwd()+"/../Data/"+sys.argv[trainId + 1]+"/"
@@ -56,6 +59,7 @@ if(learnId != -1):
                 Tools  = FScore[0].split(":")[1].split()
 
         w = {} #[tool -> weight([index -> val])]
+        TrainToolsDict = {}
         for tool in Tools:
                 ##--------- Get the training data ---------##
                 trainFileName = Dpath+"/Training/"+tool+".data"
@@ -64,5 +68,24 @@ if(learnId != -1):
 
                 w_temp = linearRegression.LinearRegression(trainData)
                 w[tool] = w_temp
+				##---- Get the error norm and score on the training data -----##
+                trainData = open(trainFileName, "rb").read().splitlines()
+                [xdata,ydata] = func.parseInfo(trainData)
+                TrainToolsDict[tool] = func.getPredictedScoreError(xdata,ydata, w_temp)
+		BestScore = float("-infinity")
+		BestTool  = "Still not found"
+        for key in TrainToolsDict.keys():
+        	if(TrainToolsDict[key][1] > BestScore):
+				BestScore = TrainToolsDict[key][1]
+				BestTool  = key
+        print "Best Score:", BestScore, "Best Tool: ", BestTool
+				
 
-        print "w:" , w
+     #   print "w:" , w
+
+##------ Testing on SVComp15 ----------
+#if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
+	
+   
+	
+			
