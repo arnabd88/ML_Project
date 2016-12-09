@@ -124,4 +124,28 @@ def generateTrainingData( BMList, BMSubList, FScore, DPath):
 
 	WriteTrainingData(genData,Score,DPath)
 		
-		
+	
+def parseInfo ( xvecs):
+	dsize = len(xvecs)
+	xdata = []
+	dtemp = []
+	ylabel = []
+	for i in range(0,dsize):
+		line = xvecs[i].split()
+		dtemp = [1.0]  ## Adding the bias term
+		for j in range(1,len(line)):
+			dtemp.append(float(line[j]))
+		xdata.append(dtemp)
+		ylabel.append(float(line[0]))
+	return [xdata, ylabel]
+	
+
+def getPredictedScoreError(xdata, ydata, wvec):
+	wtxSum = 0.0
+	errorTrack = []
+	for i in range(0,len(xdata)):
+		wtx = numpy.dot(wvec, xdata[i])
+		errorTrack.append([ydata[i]-wtxSum])
+		print "Value Mismatch = ", ydata[i]-wtx, ydata[i], wtx
+		wtxSum += wtx
+	return [errorTrack, wtxSum]
