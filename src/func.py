@@ -13,6 +13,14 @@ def trimStr( str1 ):
 			l2 = l2+i
 	return l2
 
+def reportTrend(simdata,phase):
+	winTracker = [(value[1],key) for key,value in simdata.items()]
+	winTracker.sort()
+	print "########## Result During ",phase," phase ###############"
+	for j in range(1,len(winTracker)+1):
+		print "Position:", j,",Tool:",winTracker[-j][1], ",Score:",winTracker[-j][0]
+	
+
 
 
 def NormalizeScore(FScore):
@@ -27,16 +35,16 @@ def NormalizeScore(FScore):
 		tempActualScore = []
 		for j in range(0,len(scoreList)):
 			if (scoreList[j] != "*"):
-				tempScore.append(numpy.absolute(int(scoreList[j])))
-				tempActualScore.append(int(scoreList[j]))
+				tempScore.append(numpy.absolute(float(scoreList[j]))) ##tracks the absolute value
+				tempActualScore.append(float(scoreList[j])) ## tracks the int value
 		SumScore = sum(tempScore)
-		MaxScore = numpy.amin(numpy.array(tempScore))
+		MaxScore = numpy.amax(numpy.array(tempScore))
 		MinScore = numpy.amin(numpy.array(tempActualScore))
 		for j in range(0,len(scoreList)):
 			if(scoreList[j] != "*"):
 				Score[Tools[j]][catName] = float(scoreList[j])/SumScore
 			else:
-				Score[Tools[j]][catName] = (float(MinScore)/SumScore) - (float(MaxScore)/SumScore)
+				Score[Tools[j]][catName] = (float(MinScore)/SumScore) - numpy.absolute((float(MaxScore)))
 	return Score
 			
 			
@@ -57,6 +65,14 @@ def reverseBMSubList(BMSubList):
 		SubCatList = line.split(":")[1].split(",")
 		for i in SubCatList:
 			BMSubDict[i] = CatName
+	return BMSubDict
+
+def getBMSubDict(BMSubList):
+	BMSubDict = dict([])
+	for line in BMSubList:
+		CatName = trimStr(line.split(":")[0])
+		SubCatList = line.split(":")[1].split(",")
+		BMSubDict[CatName] = SubCatList
 	return BMSubDict
 		
 
@@ -91,6 +107,7 @@ def generateTrainingData( BMList, BMSubList, FScore, DPath):
 	BMSubDict = reverseBMSubList(BMSubList)
 	##----------------------------------------------
 	Score = NormalizeScore(FScore)
+	#print Score
 	##------- BreakDown the BenchMarkList ----------
 	BMDict = decomposeBM(BMList)
 	##----------------------------------------------
@@ -123,6 +140,7 @@ def generateTrainingData( BMList, BMSubList, FScore, DPath):
 			genData[name]['feature'] = genData[name]['feature']+str1[1:]
 
 	WriteTrainingData(genData,Score,DPath)
+	return [genData,Score]
 		
 	
 def parseInfo ( xvecs):
@@ -138,14 +156,70 @@ def parseInfo ( xvecs):
 		xdata.append(dtemp)
 		ylabel.append(float(line[0]))
 	return [xdata, ylabel]
-	
+
+def genAllTestData(tpath,tools):
+	xdata = []
+	ydata = []
+	for t in tools:
+		filedata = open(tpath+t+".data", "r+").read().splitlines()
+		[txdata, tydata] = parseInfo(filedata)
+		xdata = xdata+txdata
+		ydata = ydata+tydata
+	return [xdata,ydata]
+		
+		
 
 def getPredictedScoreError(xdata, ydata, wvec):
 	wtxSum = 0.0
 	errorTrack = []
 	for i in range(0,len(xdata)):
+		#print wvec
 		wtx = numpy.dot(wvec, xdata[i])
 		errorTrack.append([ydata[i]-wtxSum])
-		print "Value Mismatch = ", ydata[i]-wtx, ydata[i], wtx
+		#print "Value Mismatch = ", ydata[i]-wtx, ydata[i], wtx
 		wtxSum += wtx
 	return [errorTrack, wtxSum]
+
+def getPredictedScoreError2(xdata, ydata, wvec):
+	wtxSum = 0.0
+	errorTrack = []
+	for i in range(0,len(xdata)):
+		#print len(wvec) ,len(xdata[i])
+		wtx = numpy.dot(wvec, xdata[i])
+		errorTrack.append([ydata[i]-wtxSum])
+		#print "Value Mismatch = ", ydata[i]-wtx, ydata[i], wtx
+		wtxSum += wtx
+	return [errorTrack, wtxSum]
+
+
+def genData(trainId, testId):
+	genDataTrain = {}
+	genDataTest  = {}
+	if(trainId != -1):
+		Dpath     = os.getcwd()+"/../Data/"+sys.argv[trainId + 1]+"/"
+		print Dpath+sys.argv[trainId + 2]
+		BMList    = open(Dpath+sys.argv[trainId + 2], 'r+').read().splitlines()
+		BMSubList = open(Dpath+sys.argv[trainId + 3], 'r+').read().splitlines()
+		FScore    = open(Dpath+sys.argv[trainId + 4], 'r+').read().splitlines()
+		[genDataTrain,scoreTrain] = generateTrainingData(BMList, BMSubList,FScore,Dpath)
+	if(testId != -1):
+		Tpath     = os.getcwd()+"/../Data/"+sys.argv[testId + 1]+"/"
+		print Tpath+sys.argv[testId + 2]
+		TBMList    = open(Tpath+sys.argv[testId + 2], 'r+').read().splitlines()
+		TBMSubList = open(Tpath+sys.argv[testId + 3], 'r+').read().splitlines()
+		TFScore    = open(Tpath+sys.argv[testId + 4], 'r+').read().splitlines()
+		[genDataTest,scoreTest] = generateTrainingData(TBMList, TBMSubList,TFScore,Tpath)
+	return [[genDataTrain,scoreTrain], [genDataTest,scoreTest]]
+
+
+def getCategoryData(genDataStruct, cat, subcat):
+	xdata = []
+	#print genDataStruct[genDataStruct.keys()[0]]
+	#print genDataStruct.keys()[0]
+	for key in genDataStruct.keys():
+		if(genDataStruct[key]['Category'] == cat):
+			xdata.append([1.0]+map(float, genDataStruct[key]['feature']))
+
+
+	return xdata
+
