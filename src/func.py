@@ -263,10 +263,10 @@ def linReg(xdata,ydata):
 	z1 = copy.deepcopy(xdata)
 	z  = numpy.array(z1)
 	zt  = numpy.transpose(z)
-	ztz = numpy.matmul(zt,z)
+	ztz = numpy.dot(zt,z)
 	Z = numpy.add(ztz, lam*numpy.identity(len(ztz)))
 	#print Z
-	wreg = numpy.dot(numpy.matmul(numpy.linalg.inv(Z),zt),ydata)
+	wreg = numpy.dot(numpy.dot(numpy.linalg.inv(Z),zt),ydata)
 	# #print ztz
 	# P,L,U = scipy.linalg.lu(ztz)
 	# #print L
