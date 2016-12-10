@@ -2,4 +2,6 @@
 To generate data, run the main.py from inside src/
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-python main.py -trainDir SVComp14 BenchmarkList BenchSubCategoryList FinalScore.data
+#python main.py -trainDir SVComp14 BenchmarkList BenchSubCategoryList FinalScore.data
+
+python main.py -trainDir SVComp14 BenchmarkList BenchSubCategoryList FinalScore.data -testDir SVComp15 BenchmarkList BenchSubCategoryList FinalScore.data -learn
