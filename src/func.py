@@ -172,8 +172,6 @@ def genAllTestData(tpath,tools):
 		xdata = xdata+txdata
 		ydata = ydata+tydata
 	return [xdata,ydata]
-		
-		
 
 def getPredictedScoreError(xdata, ydata, wvec):
 	wtxSum = 0.0
@@ -258,8 +256,8 @@ def nonLinTransform(xdata):
 	return nonLinXdata
 			
 	
-def linReg(xdata,ydata):
-	lam = 0.01
+def linReg(xdata,ydata, lam):
+	#lam = 0.01
 	z1 = copy.deepcopy(xdata)
 	z  = numpy.array(z1)
 	zt  = numpy.transpose(z)
@@ -288,3 +286,46 @@ def linReg(xdata,ydata):
 	#x = slin.solve_triangular(G,b,lower=True)
 	#w = slin.solve_triangular(Gt,x,lower=False)
 	##w = numpy.matmul(numpy.matmul(numpy.linalg.inv(numpy.matmul(zt,z)), zt),ydata)
+
+def kFoldCV(k, xdata, ydata, lam):
+    n = len(xdata)
+    m = n/k #The number of examples in each partition
+
+    xPartitions = []
+    yPartitions = []
+    for i in range(k):
+        xPartitions.append(xdata[i*m:(i+1)*m])
+	yPartitions.append(ydata[i*m:(i+1)*m])
+
+    print len(xPartitions)
+    maxAcc = 0.0
+    Ws = []
+    acc_lam = {} # key:acc, value: lam
+    for i in lam:
+        accSum = 0.0    
+        for testPartIndx in range(k):
+            xTrainParts = xPartitions[:testPartIndx] + xPartitions[testPartIndx+1:]
+            xTrainData = [item for sublist in xTrainParts for item in sublist]
+            xTestData = xPartitions[testPartIndx]
+	    yTrainParts = yPartitions[:testPartIndx] + yPartitions[testPartIndx+1:]
+            yTrainData = [item for sublist in yTrainParts for item in sublist]
+            yTestData = yPartitions[testPartIndx]
+	    #print len(xTrainData), len(xTrainParts), len(yTrainParts), len(xTestData), len(yTestData)
+	    w = linReg(xTrainData, yTrainData, i)
+            accSum = accSum + accuracy(w, xTestData, yTestData)
+        performance = accSum/k           
+        print "lambda: " + str(i) + ",    \t average accuracy: " + str(100 * performance)
+        acc_lam.update({performance: i})
+    maxAcc = max(acc_lam.keys(), key = float)
+    return acc_lam[maxAcc], maxAcc
+
+def accuracy(w, xdata, ydata):
+        correct = 0
+	for i in range(len(xdata)):
+		label =  float(ydata[i])
+		x = xdata[i]
+		result = numpy.dot(w, x)
+		#print "label: " + str(label) + ", predict: " + str(result) + "correct: " + str(correct)
+		if (abs(label - result) <= 0.001):
+			correct += 1
+	return float(correct)/len(xdata)

@@ -54,11 +54,10 @@ if(learnId != -1):
 	    #print "Initiating Linear Regression learning .....................\n"
         Dpath  = os.getcwd()+"/../Data/"+sys.argv[trainId + 1]+"/"
       	FScore = open(Dpath+sys.argv[trainId + 4], 'r+').read().splitlines()
-        Tools  = FScore[0].split(":")[1].split()
+        trainTools  = FScore[0].split(":")[1].split()
 
-        #w = {} #[tool -> weight([index -> val])]
         TrainToolsDict = {}
-        for tool in Tools:
+        for tool in trainTools:
              ##--------- Get the training data ---------##
              trainFileName = Dpath+"/Training/"+tool+".data"
 
@@ -83,7 +82,7 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 	Tpath = os.getcwd()+"/../Data/"+sys.argv[testId + 1]+"/"
 	FScore = open(Tpath+sys.argv[trainId + 4], 'r+').read().splitlines()
 	Tools  = FScore[0].split(":")[1].split()
-
+	commonTools = [item for item in Tools if item in trainTools]
 
 	##########################################################
 	
@@ -93,8 +92,10 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 
 	##-------- Accumulate the data from all the tools -------
 	print "Testing on Full SVComp15 dataset .....................\n"
-	[xdata,ydata] = func.genAllTestData(Tpath+"Training/",Tools)
-	for tool in Tools:
+
+	#[xdata,ydata] = func.genAllTestData(Tpath+"Training/",Tools)
+	[xdata,ydata] = func.genAllTestData(Tpath+"Training/",commonTools)
+	for tool in commonTools: #Tools
 		TestToolDict[tool] = func.getPredictedScoreError(xdata,ydata,w[tool])
 	func.reportTrend(TestToolDict, "Linear: Testing on SVComp15")
 	print "Completed Testing on Full SVComp15 dataset .....................\n"
@@ -119,7 +120,7 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 		cydata = []
 		cxdata = func.getCategoryData(genDataTest,c,TBMSubDict[c] )
 		tdict = dict([])
-		for t in Tools:
+		for t in commonTools:
 			cydata = [scoreTest[t][c]]*len(cxdata)
 			tdict[t] = func.getPredictedScoreError2(cxdata,cydata,w[t])
 			#print "Break:", ToolCategoryScore[c]
@@ -141,21 +142,24 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 ##-- \phi(x) = [1,x,.5(3x^2-1), .5(5x^3 - 3x)]	
 
 w_nonLin = {}
+lam = [0.0001, 0.01, 0.1, 1, 10]
 	
 if(learnId != -1):
 	print "Initiating NonLinear Regression learning .....................\n"
 	Dpath  = os.getcwd()+"/../Data/"+sys.argv[trainId + 1]+"/"
 	FScore = open(Dpath+sys.argv[trainId + 4], 'r+').read().splitlines()
-	Tools  = FScore[0].split(":")[1].split()
+	trainTools  = FScore[0].split(":")[1].split()
 	
 	#w = {} #[tool -> weight([index -> val])]
 	TrainToolsDict = {}
-	for tool in Tools:
+	for tool in trainTools:
 		##--------- Get the training data ---------##
 		trainData = open(Dpath+"/Training/"+tool+".data",'r+').read().splitlines()
 		[xdata,ydata] = func.parseInfo(trainData) ## raw data
 		Nxdata = func.nonLinTransform(xdata)
-		w_nonLin[tool] = func.linReg(Nxdata,ydata)
+		bestLam, bestAcc = func.kFoldCV(50, Nxdata, ydata, lam)
+		print "Best lam: " + str(bestLam) + ", best Accuracy:" + str(bestAcc)
+		w_nonLin[tool] = func.linReg(Nxdata,ydata, bestLam)
 		
 		TrainToolsDict[tool] = func.getPredictedScoreError(Nxdata,ydata, w_nonLin[tool])
 	print "Completed NonLinear Regression learning .....................\n"
@@ -169,6 +173,7 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 	Tpath = os.getcwd()+"/../Data/"+sys.argv[testId + 1]+"/"
 	FScore = open(Tpath+sys.argv[trainId + 4], 'r+').read().splitlines()
 	Tools  = FScore[0].split(":")[1].split()
+        commonTools = [item for item in Tools if item in trainTools]
 
 	##########################################################
 	
@@ -180,7 +185,7 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 	##-------- Accumulate the data from all the tools -------
 	[xdata,ydata] = func.genAllTestData(Tpath+"Training/",Tools)
 	Nxdata = func.nonLinTransform(xdata)
-	for tool in Tools:
+	for tool in commonTools:
 		TestToolDict[tool] = func.getPredictedScoreError(Nxdata,ydata,w_nonLin[tool])
 	print "Completed Testing on Full SVComp15 dataset .....................\n"
 	func.reportTrend(TestToolDict, "NonLinear: Testing on SVComp15")
@@ -207,7 +212,7 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 		Nxdata = func.nonLinTransform(cxdata)
 		#print len(Nxdata)
 		tdict = dict([])
-		for t in Tools:
+		for t in commonTools:
 			cydata = [scoreTest[t][c]]*len(Nxdata)
 			tdict[t] = func.getPredictedScoreError2(Nxdata,cydata,w_nonLin[t])
 			#print "Break:", ToolCategoryScore[c]
