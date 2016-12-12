@@ -4,6 +4,7 @@ import re
 import copy
 import math
 import numpy
+import matplotlib.pyplot as plt
 import os
 
 ##--- import app libs ---##
@@ -142,7 +143,7 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 ##-- \phi(x) = [1,x,.5(3x^2-1), .5(5x^3 - 3x)]	
 
 w_nonLin = {}
-lam = [0.0001, 0.01, 0.1, 1, 10]
+lam = [0.1] #[0.0001, 0.01, 0.1, 1, 10]
 	
 if(learnId != -1):
 	print "Initiating NonLinear Regression learning .....................\n"
@@ -157,7 +158,7 @@ if(learnId != -1):
 		trainData = open(Dpath+"/Training/"+tool+".data",'r+').read().splitlines()
 		[xdata,ydata] = func.parseInfo(trainData) ## raw data
 		Nxdata = func.nonLinTransform(xdata)
-		bestLam, bestAcc = func.kFoldCV(50, Nxdata, ydata, lam)
+		bestLam, bestAcc = func.kFoldCV(25, Nxdata, ydata, lam)
 		print "Best lam: " + str(bestLam) + ", best Accuracy:" + str(bestAcc)
 		w_nonLin[tool] = func.linReg(Nxdata,ydata, bestLam)
 		
@@ -220,6 +221,16 @@ if(testId!=-1 and trainId!=-1): ##indicates training dataStructure is available
 		#print "Break:",c, [tdict[i][1] for i in Tools]
 		func.reportTrend(ToolCategoryScore[c]," prediction For Category-"+c+" on svcomp15 ")
 	print "Completed Testing NonLinear: Category Specific Testing on SVComp15 ======================\n"
+	
+	errors = []
+	for i in range(len(TrainToolsDict.values())):
+	    errors.append(TrainToolsDict.values()[0])
+
+    	plt.plot(numpy.array(TrainToolsDict.keys()), numpy.array(errors), 'bs')
+    	plt.xlabel('Tools')
+	plt.ylabel('Prediction error')
+   	plt.title('Prediction error for each tool')
+	plt.show()
 		
 
 	
