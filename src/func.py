@@ -317,7 +317,7 @@ def kFoldCV(k, xdata, ydata, lam):
         print "lambda: " + str(i) + ",    \t average accuracy: " + str(100 * performance)
         acc_lam.update({performance: i})
     maxAcc = max(acc_lam.keys(), key = float)
-    return acc_lam[maxAcc], maxAcc
+    return acc_lam[maxAcc], maxAcc * 100
 
 def accuracy(w, xdata, ydata):
         correct = 0
@@ -326,6 +326,6 @@ def accuracy(w, xdata, ydata):
 		x = xdata[i]
 		result = numpy.dot(w, x)
 		#print "label: " + str(label) + ", predict: " + str(result) + "correct: " + str(correct)
-		if (abs(label - result) <= 0.001):
+		if (abs(label - result) / (abs(label)+1) <= 0.01):
 			correct += 1
 	return float(correct)/len(xdata)
