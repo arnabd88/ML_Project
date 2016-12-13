@@ -1,7 +1,60 @@
 %parent: main.tex
 \section{Learn the Best Tool}
 \label{classification}
-In this section we elaborate on how we use Linear Regression classification to learn the best tool for every given verification task.
+In this section we describe the learning algorithm. As we mentioned in the previous section tool scores are real values, and so the learning is a regression problem. Therefore, we use \emph{Linear Regression} to learn from data. We use SVCOMP14 as the training data.
 
-\subsection{Linear Regression Classifier}
-Linear Regression Classifier supports data with real value labels. Therefore, it is a very useful in real world applications. As such, it is very popular, and is used widely. 
+\subsection{Linear Regression}
+\emph{Linear regression} is very useful in real world applications such as statistics and economics. As such, it is very popular, and is used widely. \emph{Linear regression} is a batch learning that learns a hypothesis on the whole data set. In \emph{linear regression} we use square error $(h(\bx) - f(\bx))^2$. So, the in-sample error would be $E_{in}(\bw) = \frac{1}{N} \sum \limits_{i=1}^{N} (h(\bx_i) - f(\bx_i))^2 $, where $N$ is the number of examples. By minimizing $E_{in}$ we derive the linear regression algorithm as follows.
+\[
+E_{in}(\bw) = \frac{1}{N} \sum \limits_{i=1}^{N} (\bw^T \bx_i - y_i)^2 = \frac{1}{N} ||X \bw - \by||^2 \;\;\; \Rightarrow \;\;\; \nabla E_{in}(\bw) = \frac{2}{N}X^T(X \bw - \by) = 0
+\]
+\[
+\bw = X^{\dagger} \by \text{ , where } X^{\dagger} = (X^T X)^{-1} X^T.
+\]
+Where $ X^{\dagger}$ is called \emph{pseudo-inverse} of $X$. Using the learned hypothesis, the algorithm for \emph{linear regression} would be as follows.
+
+\paragraph{\textbf{Linear Regression Algorithm:}}
+\begin{itemize}
+	\item[-] Construct the matrix $X$ and the vector $\by$ using the given data set as follows;
+	\[
+	X = \begin{bmatrix}
+					\bx^T_1 & \bx^T_2 &	... & 	\bx^T_N
+		  \end{bmatrix}^T , \;\;
+	Y = \begin{bmatrix}
+					y_1 & y_2 &	... & 	y_N
+		  \end{bmatrix}^T
+	\]
+	\item[-] Compute the \emph{pseudo-inverse} $X^{\dagger} = (X^T X)^{-1} X^T$;
+	\item[-] Return $\bw = X^{\dagger}\by$
+\end{itemize}
+
+We also use \emph{linear regression} with non-linear transformation as a regularizer, that we discuss in the following section.
+
+\subsection{Linear Regression with Regularizer}
+Regularization's objective is to reduce the variance of the out of sample error with the possibility of affecting the bias slightly. 
+In our data set, there is a deterministic noise that was introduced as an effect of approximating the individual benchmark file scores with the score of its corresponding category. We make the choice of using a more complex model using higher order polynomials as basis functions but constrain the algorithm towards simpler hypotheses space.\newline
+To get more complex models for our setup, we use non-linear transformations on the data set. The basis functions used are the "Legendre polynomials". The reason we choose "Legendre polynomials" for the transformation is due to its nice analytic properties. They provide an orthogonal polynomial basis for a variable $x \in [-1,1]$, that is, if $L_i(x)$ and $L_j(x)$ are two basis of Legendre polynomials, then $\int_{-1}^{+1} L_i(x)L_j(x) = 0$, for $i \neq j$. This allows the transformed features to be treated an independent features unlike other polynomial basis where a correlations persists and the transformed features are not entirely uncorrelated. Also, this model suits over our setup since our feature vectors are already normalized with values in $[0, 1]$. \newline
+In our problem, we have experimented with 3rd order polynomial models. So the non-linear transform into the zspace will be \textbf{z} =  $\begin{bmatrix}
+  L_0(x) &  L_1(x) &  L_2(x) &  L_3(x) \\
+\end{bmatrix}^T$ , where \newline
+\[L_0(x) = 1, \;\; L_1(x) = x, \;\; L_2(x) = \dfrac{1}{2}(3x^2 - 1), \;\; L_3(x) = \dfrac{1}{2}(5x^3 - 3x) \]
+Thus, a feature vector of length, say 2, $[x_1,x_2]$, gets transformed into a feature vector of length 8 as:
+\[[L_0(x_1),L_1(x_1),L_2(x_1),L_3(x_1),L_0(x_2),L_1(x_2),L_2(x_2),L_3(x_2)]\]
+This becomes our new features vector and we want to learn our linear hypotheses in this space. $H_3 = \sum w_iz_i$ \newline
+Then our error function, or the objective function that we aim to minimize in the transformed space becomes
+\[ E_{in}(\mathbf{w}) = \dfrac{1}{N}\sum_{n=1}^{N}(\mathbf{w^Tz_n} - y_n)^2 \]
+Hence, the unconstrained problem looks similar to the previously described linear regression model, except this is in the zspace. \newline
+Next, we apply constrained minimization to this problem which forms part of the regularizer. 
+\[\min_{\mathbf{w}} : \dfrac{1}{N}(\bz \bw-\by)^T(\bz \bw - \by) \big |_{\bw^T \bw \leq C}\]
+
+If $\bw_{reg}$ is a solution to this constrained minimization problem, then at $\bw_{reg}$ , the following holds:
+\[\nabla E_{in}(\bw_{reg}) \propto - \bw_{reg}\]
+or,
+%\[\nabla E_{in}(\bw_{reg}) = - 2\dfrac{\lambda}{N}\bw_{reg}\]
+\[\nabla E_{in}(\bw_{reg}) + 2\dfrac{\lambda}{N}\bw_{reg} = 0\]
+where $2\dfrac{\lambda}{N}$ is introduced as a constant proportionality, and $\lambda$ defines an inverse relation to C and it will be our hyperparameter to choose the best fit. \newline
+This is equivalent to the minimization of $E_{in}(\bw) + \dfrac{\lambda}{N}\bw^T \bw$ which becomes our new error/objective function with the included regularizer. Solving for its gradient to be 0, we get the following closed form to get our regularised weight vector, $\bw_{reg}$ as
+\[ \bw_{reg} = (\bz^T \bz + \lambda I)^{-1} \bz^T \by \]
+where $I$ is the identity matrix.
+\newline
+The nonLinear transform with the regularizer is cross-validated for $\lambda = [0.0001,0.01,0.1,1,10]$ over each tool's hypotheses space to find their corresponding best fit. \newline
