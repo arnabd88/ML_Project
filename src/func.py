@@ -174,6 +174,7 @@ def genAllTestData(tpath,tools):
 	return [xdata,ydata]
 
 def getPredictedScoreError(xdata, ydata, wvec):
+	#print len(xdata), len(ydata)
 	wtxSum = 0.0
 	errorTrack = []
 	for i in range(0,len(xdata)):
@@ -251,7 +252,7 @@ def nonLinTransform(xdata):
 			nonLin.append(L0(xvec[j]))
 			nonLin.append(L1(xvec[j]))
 			nonLin.append(L2(xvec[j]))
-			#nonLin.append(L3(xvec[j]))
+			nonLin.append(L3(xvec[j]))
 		nonLinXdata.append(nonLin)
 	return nonLinXdata
 			
@@ -297,7 +298,7 @@ def kFoldCV(k, xdata, ydata, lam):
         xPartitions.append(xdata[i*m:(i+1)*m])
 	yPartitions.append(ydata[i*m:(i+1)*m])
 
-    print len(xPartitions)
+    #print len(xPartitions)
     maxAcc = 0.0
     Ws = []
     acc_lam = {} # key:acc, value: lam
@@ -314,7 +315,7 @@ def kFoldCV(k, xdata, ydata, lam):
 	    w = linReg(xTrainData, yTrainData, i)
             accSum = accSum + accuracy(w, xTestData, yTestData)
         performance = accSum/k           
-        print "lambda: " + str(i) + ",    \t average accuracy: " + str(100 * performance)
+        #print "lambda: " + str(i) + ",    \t average accuracy: " + str(100 * performance)
         acc_lam.update({performance: i})
     maxAcc = max(acc_lam.keys(), key = float)
     return acc_lam[maxAcc], maxAcc * 100
@@ -326,6 +327,12 @@ def accuracy(w, xdata, ydata):
 		x = xdata[i]
 		result = numpy.dot(w, x)
 		#print "label: " + str(label) + ", predict: " + str(result) + "correct: " + str(correct)
-		if (abs(label - result) / (abs(label)+1) <= 0.01):
+		if (abs(label - result) / (abs(label)+1) <= 0.05):
 			correct += 1
 	return float(correct)/len(xdata)
+
+def reportAccuracy(tool, Acc):
+	print "The Accuracy of " + tool + ": " + str(Acc)
+	#for i in range(len(Acc)):
+	#	print "epoch " + str(i) + ": " + str(Acc[i])
+

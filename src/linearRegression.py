@@ -30,8 +30,8 @@ def PseudoInverse(X):
     return X_pinv
 ##-----------------------------------------------##
 
-def LinearRegression(Data):
-   X, Y   = MatricesXY(Data)
+def LinearRegression(X, Y):#Data):
+   #X, Y   = MatricesXY(Data)
    X_pinv = linalg.pinv(X)
    #PseudoInverse(X)
    return np.dot(X_pinv, Y)
