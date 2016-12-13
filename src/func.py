@@ -326,6 +326,6 @@ def accuracy(w, xdata, ydata):
 		x = xdata[i]
 		result = numpy.dot(w, x)
 		#print "label: " + str(label) + ", predict: " + str(result) + "correct: " + str(correct)
-		if (abs(label - result) / (abs(label)+1) <= 0.01):
+		if (abs(label - result) / (abs(label)+1) <= 0.05):
 			correct += 1
 	return float(correct)/len(xdata)
