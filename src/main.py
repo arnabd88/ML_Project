@@ -87,7 +87,7 @@ if(learnId != -1):
 	     #func.reportAccuracy(tool, accuracy_lin[tool])
 	     
 	     ## --- Get the mean of acuuracies --- ##
-	     accuracy_lin[tool] = sum(accuracy_lst)/len(accuracy_lst)
+	     accuracy_lin[tool] = sum(accuracy_lst)/len(accuracy_lst) * 100
  	     func.reportAccuracy(tool, accuracy_lin[tool])
 	    
 	     ## --- Get the mean of weights --- ##
@@ -186,7 +186,7 @@ if(learnId != -1):
 
 	     
 	     ## --- Get the mean of acuuracies --- ##                                         
-             accuracy[tool] = sum(accuracy_temp)/len(accuracy_temp)
+             accuracy[tool] = sum(accuracy_temp)/len(accuracy_temp) * 100
 	     #print accuracy[tool]
 	     func.reportAccuracy(tool, accuracy[tool])
 
